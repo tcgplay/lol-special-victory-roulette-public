@@ -1,0 +1,27 @@
+﻿# ルーレット抽選対象の設定
+# enabled: 1 = 抽選する / 0 = 抽選しない
+# 条件CSVを追加したら、このファイルにも1行追加してください
+# 条件の本文は conditions/NN_*.csv の # name: # summary: # judge: # play: です
+filename,enabled,memo
+01_first_tower.csv,1,最初に1つタワーを破壊
+02_first_nexus_touch.csv,1,最初にネクサスに触る
+03_first_triple_kill.csv,1,最初にトリプルキル
+04_first_two_dragons.csv,1,最初にドラゴン2体
+05_first_three_dragons.csv,1,最初にドラゴン3体
+06_first_inhibitor.csv,1,最初にインヒビター1つ
+07_first_two_inhibitors.csv,1,最初にインヒビター2つ
+08_first_player_3000g.csv,1,誰かが3000G所持
+09_first_player_5000g.csv,1,誰かが5000G所持
+10_first_team_3_kills.csv,1,チーム合計3キル
+11_first_team_5_kills.csv,1,チーム合計5キル
+12_first_team_10_kills.csv,1,チーム合計10キル
+13_first_solo_3_kills.csv,1,単体で3キル
+14_first_solo_5_kills.csv,1,単体で5キル
+15_first_solo_10_kills.csv,1,単体で10キル
+16_first_baron.csv,1,最初にバロン1体
+17_first_all_enemies_once.csv,1,敵チャンピオン全員を1回以上
+18_first_level_6.csv,1,誰かがレベル6
+19_first_level_8.csv,1,誰かがレベル8
+20_first_level_10.csv,1,誰かがレベル10
+21_first_cs_100.csv,1,誰かのCSが100
+22_first_cs_200.csv,1,誰かのCSが200

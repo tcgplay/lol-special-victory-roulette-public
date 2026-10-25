@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <title>LoL 特殊勝利条件ルーレット</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --panel: #141923;
+      --panel-2: #1b2230;
+      --gold: #c8aa6e;
+      --gold-2: #f0e6d2;
+      --blue: #0ac8b9;
+      --red: #c84b4b;
+      --muted: #9aa4b5;
+      --line: #2b3344;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(1200px 600px at 50% -10%, #1a2438 0%, var(--bg) 55%);
+      color: var(--gold-2);
+      font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+      min-height: 100%;
+    }
+    body { padding: 24px 16px 48px; }
+    header {
+      max-width: 960px;
+      margin: 0 auto 20px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: 0.08em;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .nav-links {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+    }
+    .nav-link { color: var(--gold); font-size: 14px; }
+    .controls {
+      max-width: 960px;
+      margin: 0 auto 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+    }
+    button {
+      appearance: none;
+      border: 1px solid var(--gold);
+      background: linear-gradient(#3b3324, #1d1a14);
+      color: var(--gold-2);
+      padding: 10px 22px;
+      font-size: 15px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    button:hover { filter: brightness(1.12); }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: none;
+    }
+    #drawBtn { border-color: var(--blue); }
+    .reel {
+      flex: 1 1 320px;
+      max-width: 720px;
+      min-height: 72px;
+      border: 1px solid var(--gold);
+      background: #0e121a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold-2);
+      padding: 12px 18px;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .status {
+      max-width: 960px;
+      margin: 0 auto 16px;
+      text-align: center;
+      color: var(--muted);
+      min-height: 1.4em;
+      font-size: 14px;
+    }
+    .status.error { color: #ff8b8b; }
+    .status.loading {
+      color: var(--gold-2);
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .load-banner {
+      max-width: 960px;
+      margin: 0 auto 16px;
+      padding: 20px 24px;
+      background: var(--gold);
+      color: #0b0e14;
+      font-size: 24px;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 0.08em;
+      line-height: 1.4;
+    }
+    .load-banner.hidden { display: none; }
+    .load-banner .sub {
+      display: block;
+      margin-top: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #3b3324;
+    }
+    .stack {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+    .rules, .board {
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+    .rules { border-top: 4px solid var(--gold); }
+    .board { border-top: 4px solid var(--blue); min-height: 180px; }
+    .board.is-drawn {
+      border: 2px solid var(--gold);
+      border-top: 8px solid var(--gold);
+      box-shadow: 0 0 0 1px rgba(200, 170, 110, 0.45), 0 18px 48px rgba(0, 0, 0, 0.4);
+    }
+    .board-head, .rules-head {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+    .board.is-drawn .board-head {
+      background: var(--gold);
+      text-align: center;
+      padding: 28px 24px 24px;
+    }
+    .side-label {
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      margin-bottom: 4px;
+      color: var(--blue);
+    }
+    .rules .side-label { color: var(--gold); }
+    .board.is-drawn .side-label {
+      color: #3b3324;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .party-name {
+      margin: 0;
+      font-size: 22px;
+      color: var(--gold);
+      line-height: 1.45;
+    }
+    .board.is-drawn .party-name {
+      color: #0b0e14;
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+    }
+    @media (max-width: 640px) {
+      .board.is-drawn .party-name { font-size: 28px; }
+      .reel { font-size: 18px; min-height: 64px; }
+    }
+    .board-body, .rules-body { padding: 14px 16px 18px; }
+    .rule-list {
+      margin: 0;
+      padding-left: 1.2em;
+    }
+    .rule-list li {
+      margin: 0 0 8px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #d7dce6;
+    }
+    .desc, .play {
+      margin: 0 0 12px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #d7dce6;
+    }
+    .board.is-drawn .board-body { padding: 20px 22px 24px; }
+    .board.is-drawn .desc,
+    .board.is-drawn .play {
+      font-size: 18px;
+      line-height: 1.75;
+      color: var(--gold-2);
+    }
+    .board.is-drawn .label { font-size: 13px; }
+    .board.is-drawn .callout {
+      margin-top: 8px;
+      padding: 14px 16px;
+      border-color: var(--gold);
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .label {
+      display: block;
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      margin-bottom: 4px;
+    }
+    .placeholder {
+      color: var(--muted);
+      padding: 36px 16px;
+      text-align: center;
+    }
+    .callout {
+      margin: 4px 0 0;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: #10151e;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--gold-2);
+    }
+    .legal-notice {
+      max-width: 720px;
+      margin: 96px auto 0;
+      padding: 20px 16px 0;
+      border-top: 1px solid #3a4558;
+      color: #5a6578;
+      font-size: 10px;
+      line-height: 1.65;
+      text-align: left;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+    }
+    .legal-notice .legal-kicker {
+      display: block;
+      margin-bottom: 8px;
+      color: #4a5568;
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .legal-notice p { margin: 0 0 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>特殊勝利条件ルーレット</h1>
+    <p class="sub">サモナーズリフト カスタム 5対5向け。両チーム共通の特殊勝利条件を1つ引きます。先にその条件を達成したチームの勝ちです。抽選対象のON/OFFは <a href="condition-list.html">条件一覧</a> で切り替えます。GitHub Pages 上の切替はこのブラウザにだけ残ります。</p>
+    <div class="nav-links">
+      <a class="nav-link" href="condition-list.html">条件一覧</a>
+      <a class="nav-link" href="license.html">ライセンス（MIT）</a>
+    </div>
+  </header>
+
+  <div class="controls">
+    <button type="button" id="drawBtn" disabled>条件を回す</button>
+    <button type="button" id="resetBtn" disabled>リセット</button>
+    <div class="reel" id="reel">WAIT</div>
+  </div>
+  <div class="load-banner" id="loadBanner" role="status"><span id="loadBannerTitle">条件データ読み込み中</span>
+    <span class="sub" id="loadBannerSub">条件データを取得しています。完了するまで抽選はできません。</span>
+  </div>
+  <p class="status loading" id="status">条件データ読み込み中</p>
+
+  <div class="stack">
+    <section class="board" id="board">
+      <div class="board-head">
+        <div class="side-label">この試合の特殊勝利条件</div>
+        <h2 class="party-name" id="resultName">未抽選</h2>
+      </div>
+      <div class="board-body" id="resultBody"><p class="placeholder">抽選待ち</p></div>
+    </section>
+    <section class="rules" aria-label="共通ルール">
+      <div class="rules-head">
+        <div class="side-label">どちらの条件でも</div>
+        <h2 class="party-name">共通ルール</h2>
+      </div>
+      <div class="rules-body">
+        <ul class="rule-list">
+          <li>特殊勝利条件を先に達成したチームの勝ちです。達成したら、すぐにボイスチャットかテキストチャットで勝ち名乗りをあげてください。名乗りがあがったチームの勝ちです。</li>
+          <li>通常の勝利条件（ネクサス破壊）でも勝利になります。特殊条件の達成を待つ必要はありません。</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <aside class="legal-notice" aria-label="Legal notice">
+    <span class="legal-kicker">Legal notice — not part of the app</span>
+    <p>特殊勝利条件ルーレット isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p>
+    <p>カスタムゲームでの私的利用を想定した非公式ファンメイドです。</p>
+  </aside>
+
+  <script src="enabled-store.js"></script>
+  <script>
+    (function () {
+      var conditions = [];
+      var conditionTotal = 0;
+      var drawing = false;
+      var dataReady = false;
+      var drawn = false;
+
+      function $(id) { return document.getElementById(id); }
+
+      function escapeHtml(s) {
+        return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      function parseCsvLine(line) {
+        var out = [];
+        var cur = "";
+        var i;
+        var inQuotes = false;
+        for (i = 0; i < line.length; i++) {
+          var ch = line.charAt(i);
+          if (inQuotes) {
+            if (ch === '"') {
+              if (line.charAt(i + 1) === '"') { cur += '"'; i++; }
+              else { inQuotes = false; }
+            } else { cur += ch; }
+          } else if (ch === '"') { inQuotes = true; }
+          else if (ch === ",") { out.push(cur); cur = ""; }
+          else { cur += ch; }
+        }
+        out.push(cur);
+        return out;
+      }
+
+      function parseConditionCsv(text, filename) {
+        var lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
+        var cond = { file: filename, name: filename, summary: "", judge: "", play: "" };
+        var headers = null;
+        var i;
+        for (i = 0; i < lines.length; i++) {
+          var raw = lines[i];
+          if (!raw || !raw.replace(/\s/g, "")) { continue; }
+          if (raw.charAt(0) === "#") {
+            var body = raw.replace(/^#\s*/, "");
+            var colon = body.indexOf(":");
+            if (colon > 0) {
+              var key = body.slice(0, colon).trim();
+              var val = body.slice(colon + 1).trim();
+              if (key === "name" || key === "summary" || key === "judge" || key === "play") {
+                cond[key] = val;
+              }
+            }
+            continue;
+          }
+          var cols = parseCsvLine(raw);
+          if (!headers) { headers = cols; continue; }
+          var row = {};
+          var h;
+          for (h = 0; h < headers.length; h++) { row[headers[h]] = cols[h] || ""; }
+          if (row.name) { cond.name = row.name; }
+          if (row.summary) { cond.summary = row.summary; }
+          if (row.judge) { cond.judge = row.judge; }
+          if (row.play) { cond.play = row.play; }
+          break;
+        }
+        return cond;
+      }
+
+      function parseConfigCsv(text) {
+        var lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
+        var headers = null;
+        var rows = [];
+        var i;
+        for (i = 0; i < lines.length; i++) {
+          var raw = lines[i];
+          if (!raw || !raw.replace(/\s/g, "") || raw.charAt(0) === "#") { continue; }
+          var cols = parseCsvLine(raw);
+          if (!headers) { headers = cols; continue; }
+          var row = {};
+          var h;
+          for (h = 0; h < headers.length; h++) { row[headers[h]] = cols[h] || ""; }
+          if (row.filename) { rows.push(row); }
+        }
+        return rows;
+      }
+
+      function isEnabledValue(raw) {
+        var v = String(raw || "").trim().toLowerCase();
+        return v === "1" || v === "true" || v === "yes" || v === "on" || v === "y";
+      }
+
+      function renderCondition(cond) {
+        $("board").classList.add("is-drawn");
+        $("resultName").textContent = cond.name;
+        var html = "";
+        html += '<span class="label">説明</span><p class="desc">' + escapeHtml(cond.summary) + "</p>";
+        html += '<span class="label">判定</span><p class="desc">' + escapeHtml(cond.judge) + "</p>";
+        html += '<span class="label">進め方</span><p class="play">' + escapeHtml(cond.play) + "</p>";
+        html += '<p class="callout">達成したら、すぐにボイスチャットかテキストチャットで勝ち名乗りをあげてください。ネクサスを破壊した場合も、この条件を待たずに勝ちです。</p>';
+        $("resultBody").innerHTML = html;
+      }
+
+      function resetBoard() {
+        drawn = false;
+        $("board").classList.remove("is-drawn");
+        $("resultName").textContent = "未抽選";
+        $("resultBody").innerHTML = '<p class="placeholder">抽選待ち</p>';
+        $("reel").textContent = dataReady ? "READY" : "WAIT";
+      }
+
+      function sleep(ms) {
+        return new Promise(function (resolve) { setTimeout(resolve, ms); });
+      }
+
+      function pick(list) {
+        return list[Math.floor(Math.random() * list.length)];
+      }
+
+      async function spinSelect(list) {
+        var ticks = 12;
+        var t;
+        for (t = 0; t < ticks; t++) {
+          $("reel").textContent = pick(list).name;
+          await sleep(8 + t * 5);
+        }
+        var winner = pick(list);
+        $("reel").textContent = winner.name;
+        return winner;
+      }
+
+      function readyMessage() {
+        var hint = (window.LolEnabledStore && window.LolEnabledStore.saveHint) ? " " + window.LolEnabledStore.saveHint() : "";
+        return "抽選対象 " + conditions.length + " / 全 " + conditionTotal + " 件。対象の切替は条件一覧です。" + hint;
+      }
+
+      function updateButtons() {
+        var canDraw = dataReady && conditions.length >= 1 && !drawing;
+        $("drawBtn").disabled = !canDraw;
+        $("resetBtn").disabled = !dataReady || drawing;
+        $("drawBtn").textContent = drawn ? "条件を引き直す" : "条件を回す";
+      }
+
+      async function drawCondition() {
+        if (!dataReady || drawing) { return; }
+        if (conditions.length < 1) {
+          $("status").className = "status error";
+          $("status").textContent = "抽選対象がありません。条件一覧で「抽選する」を1件以上オンにしてください。";
+          return;
+        }
+        drawing = true;
+        updateButtons();
+        resetBoard();
+        $("status").className = "status";
+        $("status").textContent = "特殊勝利条件を抽選しています…";
+        var winner = await spinSelect(conditions);
+        drawn = true;
+        renderCondition(winner);
+        drawing = false;
+        updateButtons();
+        $("status").className = "status";
+        $("status").textContent = "「" + winner.name + "」に決定。達成したらボイスチャットかテキストチャットで勝ち名乗りをあげてください。ネクサス破壊でも勝ちです。";
+      }
+
+      async function loadData() {
+        var configRes = await fetch("conditions/config.csv");
+        if (!configRes.ok) { throw new Error("conditions/config.csv を読めませんでした"); }
+        var configRows = parseConfigCsv(await configRes.text());
+        if (window.LolEnabledStore) { window.LolEnabledStore.applyToRows(configRows); }
+        if (!configRows.length) { throw new Error("conditions/config.csv に条件がありません"); }
+
+        conditionTotal = configRows.length;
+        var loaded = [];
+        var i;
+        for (i = 0; i < configRows.length; i++) {
+          var filename = configRows[i].filename.trim();
+          $("status").className = "status loading";
+          $("status").textContent = "条件データ読み込み中（" + (i + 1) + " / " + conditionTotal + "）";
+          $("loadBannerSub").textContent = "条件 " + (i + 1) + " / " + conditionTotal + " を取得しています。完了するまで抽選はできません。";
+          var res = await fetch("conditions/" + encodeURIComponent(filename));
+          if (!res.ok) { throw new Error(filename + " を読めませんでした"); }
+          var cond = parseConditionCsv(await res.text(), filename);
+          if (!cond.name) { throw new Error(filename + " に name がありません"); }
+          if (isEnabledValue(configRows[i].enabled)) { loaded.push(cond); }
+        }
+        conditions = loaded;
+        dataReady = true;
+        $("loadBanner").classList.add("hidden");
+        $("reel").textContent = "READY";
+        $("status").className = "status";
+        $("status").textContent = readyMessage();
+        updateButtons();
+        if (conditions.length < 1) {
+          $("status").className = "status error";
+          $("status").textContent = readyMessage() + " 抽選には対象が1件以上必要です。";
+        }
+      }
+
+      $("drawBtn").addEventListener("click", function () { drawCondition(); });
+      $("resetBtn").addEventListener("click", function () {
+        if (!dataReady || drawing) { return; }
+        $("status").className = "status";
+        $("status").textContent = readyMessage();
+        resetBoard();
+        updateButtons();
+      });
+
+      loadData().catch(function (err) {
+        dataReady = false;
+        $("loadBanner").classList.remove("hidden");
+        $("loadBannerTitle").textContent = "条件データの読み込みに失敗しました";
+        $("loadBannerSub").textContent = err.message || "再読み込みしてください。";
+        $("reel").textContent = "ERROR";
+        $("status").className = "status error";
+        $("status").textContent = "読み込みに失敗しました。GitHub Pages のサイトを開くか、start.bat でローカルサーバーを起動してください。index.html を直接開いても動きません。(" + err.message + ")";
+        $("drawBtn").disabled = true;
+        $("resetBtn").disabled = true;
+      });
+    })();
+  </script>
+</body>
+</html>
